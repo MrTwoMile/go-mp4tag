@@ -111,7 +111,11 @@ func overwriteTags(mergedTags, tags *MP4Tags, delStrings []string) *MP4Tags {
 		mergedTags.ItunesAdvisory = ItunesAdvisoryNone
 	}
 
-	if containsStr(delStrings,  "itunesalbumid") {
+	if containsStr(delStrings, "itunescompilation") {
+		mergedTags.ItunesCompilation = ItunesCompilationNone
+	}
+
+	if containsStr(delStrings, "itunesalbumid") {
 		mergedTags.ItunesAlbumID = 0
 	}
 
@@ -228,6 +232,10 @@ func overwriteTags(mergedTags, tags *MP4Tags, delStrings []string) *MP4Tags {
 
 	if tags.ItunesAdvisory != ItunesAdvisoryNone {
 		mergedTags.ItunesAdvisory = tags.ItunesAdvisory
+	}
+
+	if tags.ItunesCompilation != ItunesCompilationNone {
+		mergedTags.ItunesCompilation = tags.ItunesCompilation
 	}
 
 	if tags.ItunesAlbumID > 0 {
@@ -563,6 +571,31 @@ func writeAdvisory(f *os.File, advisory ItunesAdvisory) error {
 		return err
 	}
 	_, err = f.Write([]byte{byte(advisory)})
+	return err
+}
+
+func writeCompilation(f *os.File, compilation ItunesCompilation) error {
+	_, err := f.Write([]byte{0x0, 0x0, 0x0, 0x19})
+	if err != nil {
+		return err
+	}
+	_, err = f.WriteString("cpil")
+	if err != nil {
+		return err
+	}
+	_, err = f.Write([]byte{0x0, 0x0, 0x0, 0x11})
+	if err != nil {
+		return err
+	}
+	_, err = f.WriteString("data")
+	if err != nil {
+		return err
+	}
+	_, err = f.Write([]byte{0x0, 0x0, 0x0, 0x15, 0x0, 0x0, 0x0, 0x0})
+	if err != nil {
+		return err
+	}
+	_, err = f.Write([]byte{byte(compilation)})
 	return err
 }
 
@@ -1005,7 +1038,14 @@ func (mp4 MP4) writeTags(boxes MP4Boxes, tags *MP4Tags, tempPath string) error {
 		}
 	}
 
-	if tags.ItunesAlbumID > 0  {
+	if tags.ItunesCompilation != ItunesCompilationNone {
+		err = writeCompilation(f, tags.ItunesCompilation)
+		if err != nil {
+			return err
+		}
+	}
+
+	if tags.ItunesAlbumID > 0 {
 		err = writeItunesAlbumID(f, tags.ItunesAlbumID)
 		if err != nil {
 			return err

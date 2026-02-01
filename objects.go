@@ -44,11 +44,11 @@ var ftyps = [8][]byte{
 var containers = []string{
 	"moov", "udta", "meta", "ilst", "----", "(c)alb",
 	"aART", "(c)art", "(c)nam", "(c)cmt", "(c)gen", "gnre",
-	"(c)wrt", "(c)con", "cprt", "desc", "(c)lyr", "(c)nrt",
-	"(c)pub", "trkn", "covr", "(c)day", "disk", "(c)too",
-	"trak", "mdia", "minf", "stbl", "rtng", "plID",
-	"atID", "tmpo", "sonm", "soal", "soar", "soco",
-	"soaa",
+	"(c)wrt", "(c)con", "cpil", "cprt", "desc", "(c)lyr",
+	"(c)nrt", "(c)pub", "trkn", "covr", "(c)day", "disk",
+	"(c)too", "trak", "mdia", "minf", "stbl", "rtng",
+	"plID", "atID", "tmpo", "sonm", "soal", "soar",
+	"soco", "soaa",
 }
 
 // 0-9
@@ -99,6 +99,19 @@ const (
 var resolveItunesAdvisory = map[uint8]ItunesAdvisory{
 	1: ItunesAdvisoryExplicit,
 	2: ItunesAdvisoryClean,
+}
+
+type ItunesCompilation int8
+
+const (
+	ItunesNotCompilation ItunesCompilation = iota
+	ItunesIsCompilation
+	ItunesCompilationNone
+)
+
+var resolveItunesCompilation = map[uint8]ItunesCompilation{
+	0: ItunesNotCompilation,
+	1: ItunesIsCompilation,
 }
 
 // GenreNone
@@ -296,6 +309,7 @@ type MP4Tags struct {
 	DiscTotal         int16
 	Genre             Genre
 	ItunesAdvisory    ItunesAdvisory
+	ItunesCompilation ItunesCompilation
 	ItunesAlbumID     int32
 	ItunesArtistID    int32
 	Lyrics            string

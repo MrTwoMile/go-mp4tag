@@ -358,6 +358,27 @@ func (mp4 MP4) readAdvisory(boxes MP4Boxes) (ItunesAdvisory, error) {
 	return advisory, nil
 }
 
+func (mp4 MP4) readCompilation(boxes MP4Boxes) (ItunesCompilation, error) {
+	none := ItunesCompilationNone
+	box := boxes.getBoxByPath("moov.udta.meta.ilst.cpil.data")
+	if box == nil {
+		return none, nil
+	}
+	_, err := mp4.f.Seek(box.StartOffset+16, io.SeekStart)
+	if err != nil {
+		return none, err
+	}
+	b, err := mp4.readByte()
+	if err != nil {
+		return none, err
+	}
+	compilation, ok := resolveItunesCompilation[uint8(b)]
+	if !ok {
+		return none, nil
+	}
+	return compilation, nil
+}
+
 func (mp4 MP4) readGenre(boxes MP4Boxes) (Genre, error) {
 	none := GenreNone
 	box := boxes.getBoxByPath("moov.udta.meta.ilst.gnre.data")
@@ -461,7 +482,12 @@ func (mp4 MP4) readTags(boxes MP4Boxes) (*MP4Tags, error) {
 	}
 
 	advisory, err := mp4.readAdvisory(boxes)
-	if err != nil  {
+	if err != nil {
+		return nil, err
+	}
+
+	compilation, err := mp4.readCompilation(boxes)
+	if err != nil {
 		return nil, err
 	}
 
@@ -491,6 +517,7 @@ func (mp4 MP4) readTags(boxes MP4Boxes) (*MP4Tags, error) {
 		DiscTotal:         discTotal,
 		Genre:             genre,
 		ItunesAdvisory:    advisory,
+		ItunesCompilation: compilation,
 		ItunesAlbumID:     albumID,
 		ItunesArtistID:    artistID,
 		Lyrics:            lyrics,
