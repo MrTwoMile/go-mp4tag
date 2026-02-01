@@ -119,6 +119,7 @@ Case insensitive.
 - itunesadvisory
 - itunesalbumid
 - itunesartistid
+- itunescompilation
 - lyrics
 - narrator
 - picture:<position index starting from 1>
